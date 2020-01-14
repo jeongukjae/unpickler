@@ -1,6 +1,7 @@
 #ifndef _UNPICKLER_H_
 #define _UNPICKLER_H_
 
+#include <cstring>
 #include <fstream>
 #include <string>
 #include <vector>
