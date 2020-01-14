@@ -1,6 +1,6 @@
-# picklepp
+# unpickler
 
-An implementation of pickle (Python) written in C++
+An implementation of pickle.Unpickler (Python) written in C++
 
 ## References
 
