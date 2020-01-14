@@ -1,0 +1,39 @@
+name: Run Test
+
+on: [push]
+
+jobs:
+  run-test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest]
+    steps:
+      - uses: actions/checkout@v1
+      - name: git pull submodules
+        run: git submodule update --init --recursive
+
+      - name: Install Ninja for Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          curl -LO https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip
+          sudo unzip ninja-linux.zip -d /usr/local/bin/
+
+      - name: Install Ninja for macOS
+        if: matrix.os == 'macOS-latest'
+        run: |
+          curl -LO https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-mac.zip
+          sudo unzip ninja-mac.zip -d /usr/local/bin/
+
+      - name: Set up CMake
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DBUILD_TEST=ON -GNinja
+
+      - name: Build C++ and Run C++ Tests
+        run: |
+          cd build
+          ninja
+          ./run-test
