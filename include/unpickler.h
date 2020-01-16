@@ -116,6 +116,7 @@ struct Frame {
 struct PickleObject {
   char protocol;
   std::vector<Frame*> frames;
+  size_t totalLength;
 
   ~PickleObject() {
     for (const auto frame : frames) {
@@ -160,8 +161,10 @@ class Unpickler {
     size_t currentPosition = 2;
     while (currentPosition < bufferLength) {
       char op = buffer[currentPosition];
-      if (op == opcode::STOP)
+      if (op == opcode::STOP) {
+        object->totalLength = currentPosition + 1;
         break;
+      }
 
       size_t frameSize;
       size_t offset;

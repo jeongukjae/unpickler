@@ -6,6 +6,7 @@ TEST(unpickle, unpickle_file) {
   unpickler::PickleObject* object = unpickler.load("../tests/test-data/data1.pkl");
 
   ASSERT_EQ(object->protocol, 3);
+  ASSERT_EQ(object->totalLength, 22);
   ASSERT_EQ(object->frames.size(), 2);
   ASSERT_EQ(object->frames.at(0)->opcode, 'X');
   ASSERT_EQ(object->frames.at(0)->frameSize, 12);
@@ -22,6 +23,7 @@ TEST(unpickle, unpickle_string) {
   unpickler::PickleObject* object = unpickler.loads(pickled, 22);
 
   ASSERT_EQ(object->protocol, 3);
+  ASSERT_EQ(object->totalLength, 22);
   ASSERT_EQ(object->frames.size(), 2);
   ASSERT_EQ(object->frames.at(0)->opcode, 'X');
   ASSERT_EQ(object->frames.at(0)->frameSize, 12);
@@ -36,6 +38,7 @@ TEST(unpickle, unpickle_long) {
   unpickler::PickleObject* object = unpickler.loads("\x80\x02\x8a\x0a\x6c\xfc\x9c\x46\xf9\x20\x6a\xa8\x50\x19\x2e", 15);
 
   ASSERT_EQ(object->protocol, 2);
+  ASSERT_EQ(object->totalLength, 15);
   ASSERT_EQ(object->frames.size(), 1);
   ASSERT_EQ(object->frames.at(0)->opcode, '\x8A');
   ASSERT_EQ(object->frames.at(0)->frameSize, 0x0a);
