@@ -4,6 +4,7 @@
 #include <cstring>
 #include <fstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -165,7 +166,9 @@ class Unpickler {
       size_t frameSize;
       size_t offset;
 
-      frameSize = parseOpcode(op, &buffer[currentPosition + 1], &offset);
+      auto parsed = parseOpcode(op, &buffer[currentPosition + 1]);
+      frameSize = parsed.first;
+      offset = parsed.second;
 
       char* content;
       if (frameSize > 0) {
@@ -186,17 +189,15 @@ class Unpickler {
  private:
   bool isBigEndian;
 
-  size_t parseOpcode(char op, const char* buffer, size_t* offset) {
+  std::pair<size_t, size_t> parseOpcode(char op, const char* buffer) {
     // returns frameSize to read
     switch (op) {
       case opcode::BINPUT:
       case opcode::LONG1:
-        *offset = 1;
-        return buffer[0];
+        return std::make_pair(buffer[0], 1);
 
       default:
-        *offset = 4;
-        return read4BytesFromCharArray(buffer, isBigEndian);
+        return std::make_pair(read4BytesFromCharArray(buffer, isBigEndian), 4);
     }
   }
 };
