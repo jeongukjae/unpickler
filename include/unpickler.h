@@ -143,7 +143,7 @@ class Unpickler {
     stream.read((char*)buffer, length);
 
     PickleObject* result = loads(buffer, length);
-    delete buffer;
+    delete[] buffer;
 
     return result;
   }
