@@ -3,6 +3,7 @@
 
 #include <cstring>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -111,6 +112,8 @@ struct Frame {
     if (content != NULL)
       delete content;
   }
+
+  std::string toString() { return std::string(content, content + frameSize); }
 };
 
 struct PickleObject {
@@ -161,19 +164,20 @@ class Unpickler {
     size_t currentPosition = 2;
     while (currentPosition < bufferLength) {
       char op = buffer[currentPosition];
+      size_t frameSize = 0;
+      size_t offset = 0;
+      char* content;
+
       if (op == opcode::STOP) {
+        // stop parsing
         object->totalLength = currentPosition + 1;
         break;
       }
-
-      size_t frameSize;
-      size_t offset;
 
       auto parsed = parseOpcode(op, &buffer[currentPosition + 1]);
       frameSize = parsed.first;
       offset = parsed.second;
 
-      char* content;
       if (frameSize > 0) {
         content = new char[frameSize];
         std::memcpy(content, &buffer[currentPosition + 1 + offset], frameSize);
@@ -197,15 +201,24 @@ class Unpickler {
     switch (op) {
       case opcode::EMPTY_DICT:
       case opcode::EMPTY_TUPLE:
-      case opcode::MARK:
+      case opcode::TUPLE:
+      case opcode::TUPLE1:
+      case opcode::TUPLE2:
+      case opcode::NONE:
       case opcode::NEWTRUE:
+      case opcode::NEWFALSE:
+      case opcode::MARK:
+      case opcode::SETITEM:
       case opcode::SETITEMS:
       case opcode::BUILD:
+      case opcode::REDUCE:
+      case opcode::BINPERSID:
         // read zero byte
         return std::make_pair(0, 0);
 
       case opcode::BINPUT:
       case opcode::BININT1:
+      case opcode::BINGET:
         // read 1 byte
         return std::make_pair(1, 0);
 
@@ -218,10 +231,32 @@ class Unpickler {
         return std::make_pair(2, 0);
 
       case opcode::BINUNICODE:
-      default:
         // read buffer[0] ~ buffer[3] bytes
         return std::make_pair(read4BytesFromCharArray(buffer, isBigEndian), 4);
+
+      case opcode::GLOBAL:
+        // this opcode stops parsing when met \n (0x0a) twice.
+        return std::make_pair(parseGlobalOpcode(buffer), 0);
+
+      default:
+        std::stringstream s;
+        s << "unknown opcode: " << op << " (0x" << std::hex << (int)(op & 0xff) << ")";
+        throw std::runtime_error(s.str());
     }
+  }
+
+  size_t parseGlobalOpcode(const char* buffer) {
+    size_t offset = 0;
+    bool metAlready = false;
+    while (true) {
+      if (buffer[offset++] == '\x0a') {
+        if (metAlready)
+          break;
+        metAlready = true;
+      }
+    }
+
+    return offset;
   }
 };
 

@@ -127,7 +127,7 @@ TEST(unpickle, unpickle_object_that_has_multiple_value) {
   ASSERT_STREQ(object->frames.at(1)->content, "\x00");
   ASSERT_EQ(object->frames.at(2)->opcode, unpickler::opcode::MARK);
   ASSERT_EQ(object->frames.at(9)->opcode, unpickler::opcode::BINUNICODE);
-  ASSERT_STREQ(object->frames.at(9)->content, "type_sizes");
+  ASSERT_EQ(object->frames.at(9)->toString(), "type_sizes");
   ASSERT_EQ(object->frames.at(21)->opcode, unpickler::opcode::BINPUT);
   ASSERT_EQ(object->frames.at(21)->frameSize, 1);
   ASSERT_STREQ(object->frames.at(21)->content, "\x07");
@@ -167,10 +167,16 @@ TEST(unpickle, unpickle_very_long_object) {
   ...
   */
   unpickler::Unpickler unpickler;
-  unpickler::PickleObject* object = unpickler.load("../tests/test-data/data2.pkl");
+  unpickler::PickleObject* object = unpickler.load("../tests/test-data/data3.pkl");
 
   ASSERT_EQ(object->protocol, 2);
-  ASSERT_EQ(object->totalLength, 1132);
+  ASSERT_EQ(object->totalLength, 1133);
+  ASSERT_EQ(object->frames.size(), 405);
+  ASSERT_EQ(object->frames.at(0)->toString(), "collections\nOrderedDict\n");
+  ASSERT_EQ(object->frames.at(3)->opcode, unpickler::opcode::REDUCE);
+  ASSERT_EQ(object->frames.at(3)->opcode, unpickler::opcode::REDUCE);
+  ASSERT_EQ(object->frames.at(6)->toString(), "conv1.weight");
+  ASSERT_EQ(object->frames.at(16)->toString(), "140731321996352");
 
   delete object;
 }
