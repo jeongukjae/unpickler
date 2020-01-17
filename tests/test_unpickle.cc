@@ -40,6 +40,7 @@ TEST(unpickle, unpickle_string) {
   ASSERT_EQ(object->frames.size(), 2);
   ASSERT_EQ(object->frames.at(0)->opcode, 'X');
   ASSERT_EQ(object->frames.at(0)->frameSize, 12);
+  ASSERT_EQ(object->frames.at(0)->toString(), "hello world!");
   ASSERT_EQ(object->frames.at(1)->opcode, 'q');
   ASSERT_EQ(object->frames.at(1)->frameSize, 1);
   ASSERT_STREQ(object->frames.at(1)->content, "\x00");
@@ -61,7 +62,7 @@ TEST(unpickle, unpickle_long) {
   ASSERT_EQ(object->frames.size(), 1);
   ASSERT_EQ(object->frames.at(0)->opcode, '\x8A');
   ASSERT_EQ(object->frames.at(0)->frameSize, 0x0a);
-  ASSERT_STREQ(object->frames.at(0)->content, "\x6c\xfc\x9c\x46\xf9\x20\x6a\xa8\x50\x19");
+  ASSERT_EQ(object->frames.at(0)->toString(), "\x6c\xfc\x9c\x46\xf9\x20\x6a\xa8\x50\x19");
 
   delete object;
 }
@@ -80,7 +81,7 @@ TEST(unpickle, unpickle_binint2) {
   ASSERT_EQ(object->frames.size(), 1);
   ASSERT_EQ(object->frames.at(0)->opcode, 'M');
   ASSERT_EQ(object->frames.at(0)->frameSize, 2);
-  ASSERT_STREQ(object->frames.at(0)->content, "\xe9\x03");
+  ASSERT_EQ(object->frames.at(0)->toString(), "\xe9\x03");
 
   delete object;
 }
