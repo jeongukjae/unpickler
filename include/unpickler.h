@@ -120,17 +120,22 @@ inline bool checkIsBigEndian() {
   return *(char*)&num != 1;
 }
 
+#define SIZE_T(x) (size_t)(0xff & x)
+
 inline size_t read4BytesFromCharArray(const char* buf, bool isBigEndian) {
   if (isBigEndian)
-    return buf[3] + (buf[2] << 8) + (buf[1] << 16) + (buf[0] << 24);
-  return buf[0] + (buf[1] << 8) + (buf[2] << 16) + (buf[3] << 24);
+    return SIZE_T(buf[3]) + (SIZE_T(buf[2]) << 8) + (SIZE_T(buf[1]) << 16) + (SIZE_T(buf[0]) << 24);
+  return SIZE_T(buf[0]) + (SIZE_T(buf[1]) << 8) + (SIZE_T(buf[2]) << 16) + (SIZE_T(buf[3]) << 24);
 }
 
 inline size_t read2BytesFromCharArray(const char* buf, bool isBigEndian) {
   if (isBigEndian)
     return buf[1] + (buf[0] << 8);
-  return buf[0] + (buf[1] << 8);
+
+  return SIZE_T(buf[0]) + (SIZE_T(buf[1]) << 8);
 }
+
+#undef SIZE_T
 
 class Unpickler {
  public:
