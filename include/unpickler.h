@@ -193,13 +193,33 @@ class Unpickler {
   bool isBigEndian;
 
   std::pair<size_t, size_t> parseOpcode(char op, const char* buffer) {
-    // returns frameSize to read
+    // returns <frameSize, offset>
     switch (op) {
+      case opcode::EMPTY_DICT:
+      case opcode::EMPTY_TUPLE:
+      case opcode::MARK:
+      case opcode::NEWTRUE:
+      case opcode::SETITEMS:
+      case opcode::BUILD:
+        // read zero byte
+        return std::make_pair(0, 0);
+
       case opcode::BINPUT:
+      case opcode::BININT1:
+        // read 1 byte
+        return std::make_pair(1, 0);
+
       case opcode::LONG1:
+        // read buffer[0] bytes
         return std::make_pair(buffer[0], 1);
 
+      case opcode::BININT2:
+        // read 2 bytes
+        return std::make_pair(2, 0);
+
+      case opcode::BINUNICODE:
       default:
+        // read buffer[0] ~ buffer[3] bytes
         return std::make_pair(read4BytesFromCharArray(buffer, isBigEndian), 4);
     }
   }
