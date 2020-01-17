@@ -8,19 +8,6 @@
 #include <utility>
 #include <vector>
 
-namespace {
-inline bool checkIsBigEndian() {
-  int num = 1;
-  return *(char*)&num != 1;
-}
-
-inline size_t read4BytesFromCharArray(const char* buf, bool isBigEndian) {
-  if (isBigEndian)
-    return buf[3] + (buf[2] << 8) + (buf[1] << 16) + (buf[0] << 24);
-  return buf[0] + (buf[1] << 8) + (buf[2] << 16) + (buf[3] << 24);
-}
-}  // namespace
-
 namespace unpickler {
 
 // from https://github.com/python/cpython/blob/master/Modules/_pickle.c
@@ -127,6 +114,23 @@ struct PickleObject {
     }
   }
 };
+
+inline bool checkIsBigEndian() {
+  int num = 1;
+  return *(char*)&num != 1;
+}
+
+inline size_t read4BytesFromCharArray(const char* buf, bool isBigEndian) {
+  if (isBigEndian)
+    return buf[3] + (buf[2] << 8) + (buf[1] << 16) + (buf[0] << 24);
+  return buf[0] + (buf[1] << 8) + (buf[2] << 16) + (buf[3] << 24);
+}
+
+inline size_t read2BytesFromCharArray(const char* buf, bool isBigEndian) {
+  if (isBigEndian)
+    return buf[1] + (buf[0] << 8);
+  return buf[0] + (buf[1] << 8);
+}
 
 class Unpickler {
  public:
