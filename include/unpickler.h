@@ -10,6 +10,30 @@
 
 namespace unpickler {
 
+namespace {
+#define SIZE_T(x) (size_t)(0xff & x)
+
+inline bool checkIsBigEndian() {
+  int num = 1;
+  return *(char*)&num != 1;
+}
+
+inline size_t read4BytesFromCharArray(const char* buf, bool isBigEndian) {
+  if (isBigEndian)
+    return SIZE_T(buf[3]) + (SIZE_T(buf[2]) << 8) + (SIZE_T(buf[1]) << 16) + (SIZE_T(buf[0]) << 24);
+  return SIZE_T(buf[0]) + (SIZE_T(buf[1]) << 8) + (SIZE_T(buf[2]) << 16) + (SIZE_T(buf[3]) << 24);
+}
+
+inline size_t read2BytesFromCharArray(const char* buf, bool isBigEndian) {
+  if (isBigEndian)
+    return buf[1] + (buf[0] << 8);
+
+  return SIZE_T(buf[0]) + (SIZE_T(buf[1]) << 8);
+}
+
+#undef SIZE_T
+}  // namespace
+
 // from https://github.com/python/cpython/blob/master/Modules/_pickle.c
 enum opcode {
   MARK = '(',
@@ -101,6 +125,7 @@ struct Frame {
   }
 
   std::string toString() { return std::string(content, content + frameSize); }
+  size_t to2BytesInteger(bool isBigEndian) { return read2BytesFromCharArray(content, isBigEndian); }
 };
 
 struct PickleObject {
@@ -114,28 +139,6 @@ struct PickleObject {
     }
   }
 };
-
-inline bool checkIsBigEndian() {
-  int num = 1;
-  return *(char*)&num != 1;
-}
-
-#define SIZE_T(x) (size_t)(0xff & x)
-
-inline size_t read4BytesFromCharArray(const char* buf, bool isBigEndian) {
-  if (isBigEndian)
-    return SIZE_T(buf[3]) + (SIZE_T(buf[2]) << 8) + (SIZE_T(buf[1]) << 16) + (SIZE_T(buf[0]) << 24);
-  return SIZE_T(buf[0]) + (SIZE_T(buf[1]) << 8) + (SIZE_T(buf[2]) << 16) + (SIZE_T(buf[3]) << 24);
-}
-
-inline size_t read2BytesFromCharArray(const char* buf, bool isBigEndian) {
-  if (isBigEndian)
-    return buf[1] + (buf[0] << 8);
-
-  return SIZE_T(buf[0]) + (SIZE_T(buf[1]) << 8);
-}
-
-#undef SIZE_T
 
 class Unpickler {
  public:
