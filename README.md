@@ -38,7 +38,7 @@ include_directories("${PROJECT_SOURCE_DIR}/third_party/unpickler/include")
 - Notes
   - `unpickler` do not save protocol verion in frame. Protocol version is in `unpickler::PikcleObject::protocol`.
   - `unpickler` do not save stop frame.
-  - You can check totalLength of parsed pickled object using `unpickler::PickleOjbect::totalLength`.
+  - You can check total length of parsed pickled object using `unpickler::PickleOjbect::totalLength`.
 
 ## References
 
